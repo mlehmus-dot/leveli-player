@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LEVELI MEDIA PLAYER</title>
+  <style>
+    :root {
+      --bg: #0f1220;
+      --card: #171a2e;
+      --accent: #6ee7ff;
+      --accent-2: #9b8cff;
+      --text: #eaeaf1;
+      --muted: #a6accd;
+      --danger: #ff6b6b;
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 24px; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 600px at 80% -10%, rgba(110,231,255,0.25), transparent),
+                  radial-gradient(800px 400px at -10% 0%, rgba(155,140,255,0.2), transparent), var(--bg);
+      color: var(--text);
+    }
+    .wrap { max-width: 780px; margin: 0 auto; }
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+    }
+    h1 { font-size: 22px; margin: 8px 0 16px; letter-spacing: .2px; }
+    .player {
+      display: grid; grid-template-columns: 120px 1fr; gap: 16px; align-items: center;
+    }
+    .cover {
+      width: 120px; height: 120px; border-radius: 16px; object-fit: cover;
+      background: #22253d; border: 1px solid rgba(255,255,255,0.08);
+    }
+    .title { font-weight: 700; font-size: 18px; }
+    .artist { color: var(--muted); font-size: 14px; margin-top: 2px; }
+
+    .controls { display: flex; align-items: center; gap: 12px; margin: 10px 0; flex-wrap: wrap; }
+    .btn {
+      appearance: none; border: 0; background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #04050f; font-weight: 700; padding: 10px 14px; border-radius: 999px; cursor: pointer;
+      box-shadow: 0 6px 20px rgba(110,231,255,.25), inset 0 0 0 1px rgba(0,0,0,.15);
+      transition: transform .08s ease, filter .15s ease; user-select: none;
+    }
+    .btn:active { transform: translateY(1px) scale(.98); }
+    .btn.sec { background: #232642; color: var(--text); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08); }
+    .btn.danger { background: var(--danger); color: #141222; }
+
+    .timeline { width: 100%; }
+    input[type="range"] {
+      -webkit-appearance: none; appearance: none; width: 100%; height: 6px; background: #252949;
+      border-radius: 999px; outline: none; cursor: pointer; position: relative;
+    }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 4px rgba(110,231,255, .6); }
+    input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 0; box-shadow: 0 0 0 4px rgba(110,231,255,.6); }
+
+    .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-variant-numeric: tabular-nums; }
+    .time { color: var(--muted); font-size: 12px; }
+
+    .list { margin-top: 16px; }
+    .track { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 12px; padding: 8px; border-radius: 12px; cursor: pointer; }
+    .track:hover { background: rgba(255,255,255,0.05); }
+    .track img { width: 44px; height: 44px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); }
+    .track .meta { display: flex; flex-direction: column; }
+    .track .meta .name { font-size: 14px; }
+    .track .meta .by { font-size: 12px; color: var(--muted); }
+
+    .footer { margin-top: 20px; color: var(--muted); font-size: 12px; text-align: center; }
+
+    @media (max-width: 600px) {
+      .player { grid-template-columns: 1fr; }
+      .cover { width: 100%; height: auto; aspect-ratio: 1/1; }
+      .controls { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>🎧 LEVELIN LIVE-LÄHETYKSET ÄÄNITALLENTEINA - NEWS:</h1>
+
+      <div class="player">
+        <img id="cover" class="cover" alt="Kansikuva" />
+        <div>
+          <div class="title" id="title">–</div>
+          <div class="artist" id="artist">–</div>
+
+          <div class="controls">
+            <button class="btn sec" id="prev">⏮️</button>
+            <button class="btn" id="play">▶️ / ⏸</button>
+            <button class="btn sec" id="next">⏭️</button>
+            <button class="btn sec" id="mute">🔇</button>
+            <input class="timeline" id="seek" type="range" min="0" max="100" value="0" step="0.1" aria-label="Aikajana"/>
+            <input style="max-width:140px" id="vol" type="range" min="0" max="1" value="1" step="0.01" aria-label="Äänenvoimakkuus" />
+          </div>
+w
+          <div class="row">
+            <div class="time" id="time">0:00</div>
+            <div class="time" id="duration">0:00</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="list" id="list"></div>
+
+      <div class="footer">Vinkki: Soitin jatkaa taustalla myös näytön lukituksessa.</div>
+    </div>
+  </div>
+
+  <!-- Yksi <audio> riittää; pidetään se piilossa mutta käytetään natiiveja mediatiloja -->
+  <audio id="audio" preload="metadata" playsinline></audio>
+
+  <script>
+    // *** MUOKKAA TÄMÄ OMAAN SOITTOON ***
+    // Lisää omat tallenteet audio/-kansioon ja päivitä polut + metatiedot.
+    // Formaatit: .mp3 (laajin tuki), .m4a/.aac, .ogg, .wav (isohko).
+	
+const PLAYLIST = [
+   // ============================
+  // 2) LEVELI NEWS
+  // ============================
+  {
+    src: "audio/LEVELI-12-Siirtyykö-Slim-Mill-VKK.mp3",
+    title: "LEVELI NEWS #12 - Siirtyykö Slim Mill VKK?",
+    artist: "Striimattiin livenä 5.9.2021",
+    artwork: "audio/leveli-logo.jpg"
+  },
+  {
+    src: "audio/LEVELI-13-KELA-maskittomien-TUET.mp3",
+    title: "LEVELI NEWS #13 - KELA vie maskittomien TUET!",
+    artist: "Striimattiin livenä 12.9.2021",
+    artwork: "audio/leveli-logo.jpg"
+  },
+  {
+    src: "audio/LEVELI-15-PllKKILAHJONTA-ALKANUT.mp3",
+    title: "LEVELI NEWS #15: PllKKILAHJONTA ALKANUT!",
+    artist: "Striimattiin livenä 26.9.2021",
+    artwork: "audio/leveli-logo.jpg"
+  },
+  {
+    src: "audio/LEVELI-16-SLIM-MILL-SAI-EROKIRJEEN.mp3",
+    title: "LEVELI NEWS #16: SLIM MILL sai uuden PS EROKIRJEEN!",
+    artist: "Striimattiin livenä 3.10.2021",
+    artwork: "audio/leveli-logo.jpg"
+  },
+  {
+    src: "audio/LEVELI-17-Koronauutisointi.mp3",
+    title: "LEVELI NEWS #17: Koronauutisointi naurettavalla tasolla!",
+    artist: "Striimattiin livenä 10.10.2021",
+    artwork: "audio/leveli-logo.jpg"
+  },
+  {
+    src: "audio/LEVELI-28-Peter-Nygardista.mp3",
+    title: "LEVELI NEWS #28: Sairasta lisätietoa Peter Nygardista!",
+    artist: "Striimattiin livenä 2.1.2022",
+    artwork: "audio/leveli-logo.jpg"
+  },
+  {
+    src: "audio/LEVELI-29-HSn-roska-artikkeli.mp3",
+    title: "LEVELI NEWS #29: HS:n roska-artikkeli ANOSTA!",
+    artist: "Striimattiin livenä 9.1.2022",
+    artwork: "audio/leveli-logo.jpg"
+  },
+  {
+    src: "audio/LEVELI-6-ROKOTEPASSIEN-PUSKU.mp3",
+    title: "LEVELI NEWS #6: ROKOTEPASSIEN PUSKU ON ALKANUT!",
+    artist: "Striimattiin livenä 25.7.2021",
+    artwork: "audio/leveli-logo.jpg"
+  },
+  {
+    src: "audio/LEVELI-7-Junnu-haastaa-oikeuteen.mp3",
+    title: "LEVELI NEWS #7: Junnu haastaa PS puolueen oikeuteen!",
+    artist: "Striimattiin livenä 1.8.2021",
+    artwork: "audio/leveli-logo.jpg"
+  },
+
+  // ============================
+  // 3) MUUT (SHOW, LIVE, SALALIITTO jne.)
+  // ============================
+  {
+    src: "audio/LEVELI-SUURI-NATO-VAITTELY.mp3",
+    title: "LEVELI SUURI NATO VÄITTELY",
+    artist: "Väittelyssä: Janus Putkonen x Slim Mill VS Miki Sileoni x Tommi O. Pälve",
+    artwork: "audio/leveli-logo.jpg"
+  },
+  {
+    src: "audio/LEVELI-Alkesi-Grymin.mp3",
+    title: "LEVELI LIVE - Aleksi Grymin: naurettavat bitcoin puheet!",
+    artist: "Debunkataan suomen pankin miehen bitcoin-analyysit.",
+    artwork: "audio/leveli-logo.jpg"
+  },
+  {
+    src: "audio/LEVELI-LIVE-Doom2.mp3",
+    title: "LEVELI LIVE - Doom II MM-ennätysyritys (LOOPER)",
+    artist: "Looper yrittää uutta ennätystä suoraan livessä!",
+    artwork: "audio/leveli-logo.jpg"
+  },
+  {
+    src: "audio/LEVELI-Puheenaihe-collabi.mp3",
+    title: "LEVELI & PUHEENAIHE Podcast collabi - LIVE KESKUSTELU!",
+    artist: "Vieraana Leevi Leivo & Rami Kurimo.",
+    artwork: "audio/leveli-logo.jpg"
+  },
+  {
+    src: "audio/LEVELI-S9-Sanat-numerot.mp3",
+    title: "LEVELI SALALIITTO #9 | SANAT & NUMEROT",
+    artist: "Slim Mill käy läpi sanojen ja numeroiden merkityksiä.",
+    artwork: "audio/leveli-logo.jpg"
+  },
+  {
+    src: "audio/LEVELI-88-show.mp3",
+    title: "LEVELI SHOW #88 - VIIMEINEN LÄHETYS ENNEN VAALEJA!",
+    artist: "Striimattiin livenä 6.4.2025",
+    artwork: "audio/leveli-logo.jpg"
+  },
+  {
+    src: "audio/LEVELI-suora-pellenena.mp3",
+    title: "LEVELI - SUORA LÄHETYS: Pellenenä SUOMENENNÄTYS lähetys",
+    artist: "142 pellenenää!",
+    artwork: "audio/leveli-logo.jpg"
+  }
+];
+
+
+
+    // *** TOTEUTUS ***
+    const $ = (id) => document.getElementById(id);
+    const audio = $("audio");
+    const cover = $("cover");
+    const titleEl = $("title");
+    const artistEl = $("artist");
+    const seek = $("seek");
+    const vol = $("vol");
+    const timeEl = $("time");
+    const durEl = $("duration");
+    const playBtn = $("play");
+    const prevBtn = $("prev");
+    const nextBtn = $("next");
+    const muteBtn = $("mute");
+    const listEl = $("list");
+
+    let i = +localStorage.getItem("idx") || 0;
+    if (i < 0 || i >= PLAYLIST.length) i = 0;
+
+    // Palauta viimeisin kuuntelukohta kappalekohtaisesti
+    function keyFor(src){ return `pos::${src}`; }
+
+    function fmt(s){ if(!isFinite(s)) return "0:00"; const m=Math.floor(s/60), ss=Math.floor(s%60).toString().padStart(2,'0'); return `${m}:${ss}`; }
+
+    function loadTrack(idx, {autoplay=false}={}){
+      i = (idx + PLAYLIST.length) % PLAYLIST.length;
+      const t = PLAYLIST[i];
+      localStorage.setItem("idx", i);
+      document.title = `${t.title} · ${t.artist}`;
+      titleEl.textContent = t.title; artistEl.textContent = t.artist;
+      cover.src = t.artwork || "";
+      audio.src = t.src;
+      seek.value = 0; timeEl.textContent = "0:00"; durEl.textContent = "0:00";
+
+      // Palauta viimeisin kohta
+      const saved = +localStorage.getItem(keyFor(t.src));
+      if (saved && !isNaN(saved)) {
+        audio.currentTime = saved;
+      }
+
+      updateMediaSession(t);
+      if (autoplay) audio.play().catch(()=>{});
+      renderList();
+    }
+
+    function renderList(){
+      listEl.innerHTML = "";
+      PLAYLIST.forEach((t, idx) => {
+        const row = document.createElement('div');
+        row.className = 'track';
+        row.innerHTML = `
+          <img src="${t.artwork || ''}" alt=""/>
+          <div class="meta"><span class="name">${t.title}</span><span class="by">${t.artist}</span></div>
+          <div>${idx === i ? '▶️' : ''}</div>
+        `;
+        row.addEventListener('click', () => loadTrack(idx, {autoplay:true}));
+        listEl.appendChild(row);
+      });
+    }
+
+    function updateMediaSession(t){
+      if ('mediaSession' in navigator) {
+        try {
+          navigator.mediaSession.metadata = new MediaMetadata({
+            title: t.title, artist: t.artist, album: 'Tallenteet',
+            artwork: t.artwork ? [
+              { src: t.artwork,   sizes: '512x512', type: 'image/jpeg' }
+            ] : []
+          });
+          navigator.mediaSession.setActionHandler('play', () => audio.play());
+          navigator.mediaSession.setActionHandler('pause', () => audio.pause());
+          navigator.mediaSession.setActionHandler('previoustrack', prev);
+          navigator.mediaSession.setActionHandler('nexttrack', next);
+          navigator.mediaSession.setActionHandler('seekto', (e) => { if (e.fastSeek && 'fastSeek' in audio) audio.fastSeek(e.seekTime); else audio.currentTime = e.seekTime; });
+        } catch(_) {}
+      }
+    }
+
+    function prev(){ loadTrack(i-1, {autoplay:true}); }
+    function next(){ loadTrack(i+1, {autoplay:true}); }
+
+    // --- UI handlers ---
+    playBtn.addEventListener('click', () => {
+      if (audio.paused) audio.play(); else audio.pause();
+    });
+    prevBtn.addEventListener('click', prev);
+    nextBtn.addEventListener('click', next);
+    muteBtn.addEventListener('click', () => { audio.muted = !audio.muted; muteBtn.textContent = audio.muted ? '🔈' : '🔇'; });
+    vol.addEventListener('input', () => { audio.volume = +vol.value; });
+
+    seek.addEventListener('input', () => {
+      if (!isFinite(audio.duration)) return;
+      audio.currentTime = (+seek.value / 100) * audio.duration;
+    });
+
+    audio.addEventListener('timeupdate', () => {
+      if (isFinite(audio.duration)) {
+        const p = (audio.currentTime / audio.duration) * 100;
+        seek.value = p;
+        timeEl.textContent = fmt(audio.currentTime);
+        durEl.textContent = fmt(audio.duration);
+      }
+      const t = PLAYLIST[i];
+      localStorage.setItem(keyFor(t.src), audio.currentTime);
+    });
+
+    audio.addEventListener('ended', next);
+
+    // iOS/Safari taustatoisto: varmista että käytämme <audio> eikä pelkkää WebAudioa
+    // Autoplay vaatii käyttäjän eleen; käyttäjä painaa play-nappia -> ok.
+
+    // Lataa ensimmäinen kappale
+    loadTrack(i);
+  </script>
+</body>
+</html>
