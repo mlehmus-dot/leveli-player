@@ -1,4 +1,4 @@
-FILES: 
+ lueFILES: 
 
 1. index.html - Link to difference players (NEWS, PODCAST, SHOW, etc...)
 
@@ -14,4 +14,4 @@ FILES:
 
 6. leveli-logo.jpg - Logo image in every track
 
-date 28.8.2025 jee jeee uuu jeee jee edit 4:11
+dawerwerwerwer
