@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LEVELI MEDIA PLAYER - LEVELI SHOW</title>
+  <style>
+    :root {
+      --bg: #0f1220;
+      --card: #171a2e;
+      --accent: #6ee7ff;
+      --accent-2: #9b8cff;
+      --text: #eaeaf1;
+      --muted: #a6accd;
+      --danger: #ff6b6b;
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 24px; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 600px at 80% -10%, rgba(110,231,255,0.25), transparent),
+                  radial-gradient(800px 400px at -10% 0%, rgba(155,140,255,0.2), transparent), var(--bg);
+      color: var(--text);
+    }
+    .wrap { max-width: 780px; margin: 0 auto; }
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+    }
+    h1 { font-size: 22px; margin: 8px 0 16px; letter-spacing: .2px; }
+    .player {
+      display: grid; grid-template-columns: 120px 1fr; gap: 16px; align-items: center;
+    }
+    .cover {
+      width: 120px; height: 120px; border-radius: 16px; object-fit: cover;
+      background: #22253d; border: 1px solid rgba(255,255,255,0.08);
+    }
+    .title { font-weight: 700; font-size: 18px; }
+    .artist { color: var(--muted); font-size: 14px; margin-top: 2px; }
+
+    .controls { display: flex; align-items: center; gap: 12px; margin: 10px 0; flex-wrap: wrap; }
+    .btn {
+      appearance: none; border: 0; background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #04050f; font-weight: 700; padding: 10px 14px; border-radius: 999px; cursor: pointer;
+      box-shadow: 0 6px 20px rgba(110,231,255,.25), inset 0 0 0 1px rgba(0,0,0,.15);
+      transition: transform .08s ease, filter .15s ease; user-select: none;
+    }
+    .btn:active { transform: translateY(1px) scale(.98); }
+    .btn.sec { background: #232642; color: var(--text); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08); }
+    .btn.danger { background: var(--danger); color: #141222; }
+
+    .timeline { width: 100%; }
+    input[type="range"] {
+      -webkit-appearance: none; appearance: none; width: 100%; height: 6px; background: #252949;
+      border-radius: 999px; outline: none; cursor: pointer; position: relative;
+    }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 4px rgba(110,231,255, .6); }
+    input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 0; box-shadow: 0 0 0 4px rgba(110,231,255,.6); }
+
+    .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-variant-numeric: tabular-nums; }
+    .time { color: var(--muted); font-size: 12px; }
+
+    .list { margin-top: 16px; }
+    .track { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 12px; padding: 8px; border-radius: 12px; cursor: pointer; }
+    .track:hover { background: rgba(255,255,255,0.05); }
+    .track img { width: 44px; height: 44px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); }
+    .track .meta { display: flex; flex-direction: column; }
+    .track .meta .name { font-size: 14px; }
+    .track .meta .by { font-size: 12px; color: var(--muted); }
+
+    .footer { margin-top: 20px; color: var(--muted); font-size: 12px; text-align: center; }
+
+    @media (max-width: 600px) {
+      .player { grid-template-columns: 1fr; }
+      .cover { width: 100%; height: auto; aspect-ratio: 1/1; }
+      .controls { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>🎧 LEVELIN LIVE-LÄHETYKSET ÄÄNITALLENTEINA - LEVELI SHOW:</h1>
+
+      <div class="player">
+        <img id="cover" class="cover" alt="Kansikuva" />
+        <div>
+          <div class="title" id="title">–</div>
+          <div class="artist" id="artist">–</div>
+
+          <div class="controls">
+            <button class="btn sec" id="prev">⏮️</button>
+            <button class="btn" id="play">▶️ / ⏸</button>
+            <button class="btn sec" id="next">⏭️</button>
+            <button class="btn sec" id="mute">🔇</button>
+            <input class="timeline" id="seek" type="range" min="0" max="100" value="0" step="0.1" aria-label="Aikajana"/>
+            <input style="max-width:140px" id="vol" type="range" min="0" max="1" value="1" step="0.01" aria-label="Äänenvoimakkuus" />
+          </div>
+w
+          <div class="row">
+            <div class="time" id="time">0:00</div>
+            <div class="time" id="duration">0:00</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="list" id="list"></div>
+	  
+<div class="footer">
+  <a href="index.html" class="footer">
+    Vaihda soittolista täältä - Etusivu
+  </a>
+</div>
+		</div>
+
+    </div>
+  </div>
+
+  <!-- Yksi <audio> riittää; pidetään se piilossa mutta käytetään natiiveja mediatiloja -->
+  <audio id="audio" preload="metadata" playsinline></audio>
+
+  <script>
+    // *** MUOKKAA TÄMÄ OMAAN SOITTOON ***
+    // Lisää omat tallenteet audio/-kansioon ja päivitä polut + metatiedot.
+    // Formaatit: .mp3 (laajin tuki), .m4a/.aac, .ogg, .wav (isohko).
+	
+const PLAYLIST = [
+  // ============================
+  // 1) LEVELI SHOW
+  // ============================
+{
+    src: "https://ia800900.us.archive.org/18/items/leveli-show/LEVELI-SHOW-1-Toimittajat.mp3",
+    title: "LEVELI SHOW #1 Toimittajat vaihtavat nyt PUOLTA! Junnun oikeuslaitos korruptio paljastus TULOSSA!",
+    artist: "Kovan kysynnän vuoksi Leveli Late Night Show palaa tauolta entistä parempana Leveli SHOW nimellä!",
+    artwork: "leveli-logo.jpg"
+  },
+{
+    src: "https://archive.org/download/leveli-show/LEVELI-SHOW-2-Marin.mp3",
+    title: "LEVELI SHOW #2 Marin ja Havisto ensi viikolla hakemassa ohjeet WEFltä! Ugandan 12 triljoonan kulta",
+    artist: "Striimattiin livenä 15.1.2023",
+    artwork: "leveli-logo.jpg"
+  },
+{
+    src: "https://archive.org/download/leveli-show/LEVELI-SHOW-3-IL.mp3",
+    title: "LEVELI SHOW #3 IL tämä suomalaismies pyörittää kulisseissa viroa! Lentojärjestelmä Salaliitto yms!",
+    artist: "Striimattiin livenä 22.1.202",
+    artwork: "leveli-logo.jpg"
+  },
+{
+    src: "https://archive.org/download/leveli-show/LEVELI-SHOW-4-ERITYISVIERAS.mp3",
+    title: "LEVELI SHOW #4 ERITYISVIERAS! Paljastuksia VKKsta! Näissä tuotteissa on ÖTÖKÖITÄ PIILOTETTUNA!",
+    artist: "Striimattiin livenä 15.5.2022",
+    artwork: "leveli-logo.jpg"
+  },
+{
+    src: "https://archive.org/download/leveli-show/LEVELI-SHOW-5-todisteita.mp3",
+    title: "LEVELI SHOW #5 Lisää todisteita JÄTTILÄISISTÄ julki! Löydetty enkeli patsas puhuttaa! Ydinpommit!",
+    artist: "Striimattiin livenä 5.2.2023",
+    artwork: "leveli-logo.jpg"
+  },
+{
+    src: "https://archive.org/download/leveli-show/LEVELI-SHOW-7-Youtuben-toimitusjohtaja.mp3",
+    title: "LEVELI SHOW #7 Youtuben toimitusjohtaja EROSI! MTV uutiset valehteli törkeästi! Ohion juna tapaus...",
+    artist: "Striimattiin livenä 19.2.2023",
+    artwork: "leveli-logo.jpg"
+  },
+{
+    src: "https://archive.org/download/leveli-show/LEVELI-SHOW-8-Espanja-sallii.mp3",
+    title: "LEVELI SHOW #8 Espanja sallii eläinten nussimisen! TRUMP vs äänestyskoneet, nauretaan propagandalle",
+    artist: "Striimattiin livenä 26.2.2023",
+    artwork: "leveli-logo.jpg"
+  },
+{
+    src: "https://archive.org/download/leveli-show/LEVELI-SHOW-10-CIA-tuhosi.mp3",
+    title: "LEVELI SHOW #10 Näin CIA tuhosi suomalaisen sukellusvenebisneksen Poliisi vs Erdogan miekkari!",
+    artist: "Lisätietoja jaksosta ei saatavilla.",
+    artwork: "leveli-logo.jpg"
+  },
+{
+    src: "https://archive.org/download/leveli-show/LEVELI-SHOW-11-YLE-MTV.mp3",
+    title: "LEVELI SHOW #11 YLE ja MTV vei  uutisoinnin  UUDELLE tasolle!   Ajankohtaisia asioita   Puheluita!",
+    artist: "Striimattiin livenä 19.3.2023",
+    artwork: "leveli-logo.jpg"
+  },
+{
+    src: "https://archive.org/download/leveli-show/LEVELI-SHOW-12-3-ERITYISVIERASTA.mp3",
+    title: "LEVELI SHOW #12 3 ERITYISVIERASTA! Fight Night, Vaalivalvojaiset, Suomen ilmatila + Paljon muuta!",
+    artist: "Striimattiin livenä 26.3.2023",
+    artwork: "leveli-logo.jpg"
+  },
+{
+    src: "https://archive.org/download/leveli-show/LEVELI-SHOW-13-Vaalien-jalkeen.mp3",
+    title: "LEVELI SHOW #13 Mitä  Vaalien  jälkeen on tapahtunut! Mitä seuraavaksi Äänestyksiä ja Puheluita!",
+    artist: "Striimattiin livenä 26.3.2023",
+    artwork: "leveli-logo.jpg"
+  },
+{
+    src: "https://archive.org/download/leveli-show/LEVELI-SHOW-14-YLE-verorahojasi.mp3",
+    title: "LEVELI SHOW #14 Näin YLE käyttää verorahojasi... PALJASTUS! Toisinajattelijoiden pidätykset alkanut",
+    artist: "Striimattiin livenä 9.4.2023",
+    artwork: "leveli-logo.jpg"
+  },
+{
+    src: "https://archive.org/download/leveli-show/LEVELI-SHOW-15-VIIMEINEN-JAKSO.mp3",
+    title: "LEVELI SHOW #15 VIIMEINEN JAKSO! (Kiitos NATON ja KRPn)",
+    artist: "Suomen NATO jäsenyyden liittymisen myötä on ilmapiiri kiristynyt totuudenpuhujia vastaan mm naurettavat maanpetos syytteet Vapan veljeksiä vastaan, ja pakottanut meidätkin lopettamaan suositun Leveli Show ohjelman!",
+    artwork: "leveli-logo.jpg"
+  },
+	{
+    src: "https://archive.org/download/leveli-show/LEVELI-SHOW-17-SENSUURIA-JA-PROPAGANDAA.mp3",
+    title: "LEVELI SHOW #17 SENSUURIA JA PROPAGANDAA! Valtamedia ja Biden VS LAPSET! REAKTIOT! PALJON UUTISIA!",
+    artist: "Striimattiin livenä 16.7.2023",
+    artwork: "leveli-logo.jpg"
+  },
+
+{
+    src: "https://archive.org/download/leveli-show/LEVELI-SHOW-18-ERITYISVIERAS-NAURETAAN-Nollatoleranssi-miekkareille.mp3",
+    title: "LEVELI SHOW #18 ERITYISVIERAS! NAURETAAN #Nollatoleranssi miekkareille 😂 USA Kiinalla mieliaseita!",
+    artist: "Ei lisätietoa lähetyksestä",
+    artwork: "leveli-logo.jpg"
+  },
+
+{
+    src: "https://archive.org/download/leveli-show/LEVELI-SHOW-19-Lintuinfluenssaa-ei-tarvitse-todistaa.mp3",
+    title: "LEVELI SHOW #19 Lintuinfluenssaa ei tarvitse todistaa 😂 Oudot valkoisen talon kokki KUOLEMAT! + MUU",
+    artist: "Striimattiin livenä 30.7.2023",
+    artwork: "leveli-logo.jpg"
+  },
+
+{
+    src: "https://archive.org/download/leveli-show/LEVELI-SHOW-20-AFRIKAN-VALLANKUMOUS.mp3",
+    title: "LEVELI SHOW #20 AFRIKAN VALLANKUMOUS! Tiitisen Lista, Kemikaalivanat, Lintuinfluenssa 😂+  PUHELUT",
+    artist: "Striimattiin livenä 6.8.2023",
+    artwork: "leveli-logo.jpg"
+  },
+
+{
+    src: "https://archive.org/download/leveli-show/LEVELI-SHOW-21-Liha-allergia-SALALIITTO.mp3",
+    title: "LEVELI SHOW #21🥩 Liha-allergia SALALIITTO! Vappukaahari, Ecuador pressamurha, Räppäri vuohiuhraus🐐",
+    artist: "Striimattiin livenä 13.8.2023",
+    artwork: "leveli-logo.jpg"
+  },
+
+{
+    src: "https://archive.org/download/leveli-show/LEVELI-SHOW-22-Ven%C3%A4j%C3%A4-servasi-SUPON%21.mp3",
+    title: "LEVELI SHOW #22 Venäjä servasi SUPON!😂 USA hyökkäsi OMIIN kansalaisiinsa!🏝️🔥KAIKKI todisteet JULKI!",
+    artist: "Striimattiin livenä 20.8.2023",
+    artwork: "leveli-logo.jpg"
+  },
+
+{
+    src: "https://archive.org/download/leveli-show/LEVELI-SHOW-23-Suomesta-MALMIKAIVOS.mp3",
+    title: "LEVELI SHOW #23 Suomesta löytyi 100 MILJARDIN arvoinen MALMIKAIVO! PUHELUITA + MUUTA!",
+    artist: "Striimattiin livenä 27.8.2023",
+    artwork: "leveli-logo.jpg"
+  },
+
+{
+    src: "https://archive.org/download/leveli-show/LEVELI-SHOW-24-UUSI-STUDIO.mp3",
+    title: "LEVELI SHOW #24 UUSI STUDIO! Tutkimusrahat puhuttaa jälleen... Mitä IHMETTÄ SDPssä tapahtuu!",
+    artist: "Striimattiin livenä 3.9.2023",
+    artwork: "leveli-logo.jpg"
+  },
+
+{
+    src: "https://archive.org/download/leveli-show/LEVELI-SHOW-25-Junnu-pressapuhe.mp3",
+    title: "LEVELI SHOW #25 JUNNUN PRESIDENTTI PUHE!👑 Uskomaton Suomi Tansania virkamies KORRUPTIO (+10Milj)!",
+    artist: "Striimattiin livenä 10.9.2023",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-show/LEVELI-SHOW-92-KUNINGAS-STAGALA.mp3",
+    title: "LEVELI SHOW #77 - 3 ERITYISVIERASTA! ｜ Venäjän MACH 10 pysäyttämättömät ohjukset lännelle UHKA？",
+    artist: "Striimattiin livenä 24.11.2024",
+    artwork: "leveli-logo.jpg"
+  },
+
+{
+    src: "https://archive.org/download/leveli-show/LEVELI-SHOW-78-ROTHSCHILD-tulipalo.mp3",
+    title: "LEVELI SHOW #78 - Will ROTHSCHILD tulipalo turma PUHUTTAA! ｜ Junnun ja AQVA kiista jatkuu! + PUHELUT",
+    artist: "Striimattiin livenä 1.12.2024",
+    artwork: "leveli-logo.jpg"
+  },
+
+{
+    src: "https://archive.org/download/leveli-show/LEVELI-SHOW-79-Itsenaisyyspaiva.mp3",
+    title: "LEVELI SHOW #79 - MITÄ TAPAHTUI Itsenäisyyspäivänä!？ ｜ Boaver-rehun kritiikki  suomessa KASVAA!",
+    artist: "Striimattiin livenä 8.12.2024",
+    artwork: "leveli-logo.jpg"
+  },
+
+{
+    src: "https://archive.org/download/leveli-show/LEVELI-SHOW-80-SUPO-JAMMAA.mp3",
+    title: "LEVELI SHOW #80 - SUPO JAMMAA X LÄHETYSTÄ？ ｜ Porche Center Helsinki SABOTOI Junnun autoa!？",
+    artist: "Striimattiin livenä 15.12.2024",
+    artwork: "leveli-logo.jpg"
+  },
+
+{
+    src: "https://archive.org/download/leveli-show/LEVELI-SHOW-86-HENRY-AFLECHT.mp3.mp3",
+    title: "LEVELI SHOW #86 - TAKAISIN PÄÄKANAVASSA! ｜ Vieraana： HENRY AFLECHT ｜ RUOKAA JA TOIVOA MIEKKARI 5.4!",
+    artist: "Striimattiin livenä 23.3.2025",
+    artwork: "leveli-logo.jpg"
+  },
+
+{
+    src: "https://archive.org/download/leveli-show/LEVELI-SHOW-87-MIEKKARIT.mp3",
+    title: "LEVELI SHOW #87 - MIEKKARIT LAUANTAINA! ｜ DIDIER & Juho Hirvelä ｜ IRAN paljasti salaisen aseensa!",
+    artist: "Striimattiin livenä 30.3.2025",
+    artwork: "leveli-logo.jpg"
+  },
+
+{
+    src: "https://archive.org/download/leveli-show/LEVELI-SHOW-90-ICE-CAGE.mp3",
+    title: "LEVELI SHOW #90 - ALLE VIIKKO ICE CAGE OTTELUUN! ｜ Syöpä KEINOLIHA korvaamassa NAUTALIHAN ｜ TIELUISKA",
+    artist: "Striimattiin livenä 27.4.2025",
+    artwork: "leveli-logo.jpg"
+  },
+
+{
+    src: "https://archive.org/download/leveli-show/LEVELI-SHOW-92-KUNINGAS-STAGALA.mp3",
+    title: "LEVELI SHOW #92 - ERITYISVIERAANA： KUNINGAS STAGALA! ｜ NAURETAAN VIHAAJILLE 😂 ｜ VIIKON UUTISET!",
+    artist: "Striimattiin livenä 11.5.2025",
+    artwork: "leveli-logo.jpg"
+  }
+];
+
+
+
+    // *** TOTEUTUS ***
+    const $ = (id) => document.getElementById(id);
+    const audio = $("audio");
+    const cover = $("cover");
+    const titleEl = $("title");
+    const artistEl = $("artist");
+    const seek = $("seek");
+    const vol = $("vol");
+    const timeEl = $("time");
+    const durEl = $("duration");
+    const playBtn = $("play");
+    const prevBtn = $("prev");
+    const nextBtn = $("next");
+    const muteBtn = $("mute");
+    const listEl = $("list");
+
+    let i = +localStorage.getItem("idx") || 0;
+    if (i < 0 || i >= PLAYLIST.length) i = 0;
+
+    // Palauta viimeisin kuuntelukohta kappalekohtaisesti
+    function keyFor(src){ return `pos::${src}`; }
+
+    function fmt(s){ if(!isFinite(s)) return "0:00"; const m=Math.floor(s/60), ss=Math.floor(s%60).toString().padStart(2,'0'); return `${m}:${ss}`; }
+
+    function loadTrack(idx, {autoplay=false}={}){
+      i = (idx + PLAYLIST.length) % PLAYLIST.length;
+      const t = PLAYLIST[i];
+      localStorage.setItem("idx", i);
+      document.title = `${t.title} · ${t.artist}`;
+      titleEl.textContent = t.title; artistEl.textContent = t.artist;
+      cover.src = t.artwork || "";
+      audio.src = t.src;
+      seek.value = 0; timeEl.textContent = "0:00"; durEl.textContent = "0:00";
+
+      // Palauta viimeisin kohta
+      const saved = +localStorage.getItem(keyFor(t.src));
+      if (saved && !isNaN(saved)) {
+        audio.currentTime = saved;
+      }
+
+      updateMediaSession(t);
+      if (autoplay) audio.play().catch(()=>{});
+      renderList();
+    }
+
+    function renderList(){
+      listEl.innerHTML = "";
+      PLAYLIST.forEach((t, idx) => {
+        const row = document.createElement('div');
+        row.className = 'track';
+        row.innerHTML = `
+          <img src="${t.artwork || ''}" alt=""/>
+          <div class="meta"><span class="name">${t.title}</span><span class="by">${t.artist}</span></div>
+          <div>${idx === i ? '▶️' : ''}</div>
+        `;
+        row.addEventListener('click', () => loadTrack(idx, {autoplay:true}));
+        listEl.appendChild(row);
+      });
+    }
+
+    function updateMediaSession(t){
+      if ('mediaSession' in navigator) {
+        try {
+          navigator.mediaSession.metadata = new MediaMetadata({
+            title: t.title, artist: t.artist, album: 'Tallenteet',
+            artwork: t.artwork ? [
+              { src: t.artwork,   sizes: '512x512', type: 'image/jpeg' }
+            ] : []
+          });
+          navigator.mediaSession.setActionHandler('play', () => audio.play());
+          navigator.mediaSession.setActionHandler('pause', () => audio.pause());
+          navigator.mediaSession.setActionHandler('previoustrack', prev);
+          navigator.mediaSession.setActionHandler('nexttrack', next);
+          navigator.mediaSession.setActionHandler('seekto', (e) => { if (e.fastSeek && 'fastSeek' in audio) audio.fastSeek(e.seekTime); else audio.currentTime = e.seekTime; });
+        } catch(_) {}
+      }
+    }
+
+    function prev(){ loadTrack(i-1, {autoplay:true}); }
+    function next(){ loadTrack(i+1, {autoplay:true}); }
+
+    // --- UI handlers ---
+    playBtn.addEventListener('click', () => {
+      if (audio.paused) audio.play(); else audio.pause();
+    });
+    prevBtn.addEventListener('click', prev);
+    nextBtn.addEventListener('click', next);
+    muteBtn.addEventListener('click', () => { audio.muted = !audio.muted; muteBtn.textContent = audio.muted ? '🔈' : '🔇'; });
+    vol.addEventListener('input', () => { audio.volume = +vol.value; });
+
+    seek.addEventListener('input', () => {
+      if (!isFinite(audio.duration)) return;
+      audio.currentTime = (+seek.value / 100) * audio.duration;
+    });
+
+    audio.addEventListener('timeupdate', () => {
+      if (isFinite(audio.duration)) {
+        const p = (audio.currentTime / audio.duration) * 100;
+        seek.value = p;
+        timeEl.textContent = fmt(audio.currentTime);
+        durEl.textContent = fmt(audio.duration);
+      }
+      const t = PLAYLIST[i];
+      localStorage.setItem(keyFor(t.src), audio.currentTime);
+    });
+
+    audio.addEventListener('ended', next);
+
+    // iOS/Safari taustatoisto: varmista että käytämme <audio> eikä pelkkää WebAudioa
+    // Autoplay vaatii käyttäjän eleen; käyttäjä painaa play-nappia -> ok.
+
+    // Lataa ensimmäinen kappale
+    loadTrack(i);
+  </script>
+</body>
+</html>

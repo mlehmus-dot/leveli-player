@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LEVELI MEDIA PLAYER - PODCASTS</title>
+  <style>
+    :root {
+      --bg: #0f1220;
+      --card: #171a2e;
+      --accent: #6ee7ff;
+      --accent-2: #9b8cff;
+      --text: #eaeaf1;
+      --muted: #a6accd;
+      --danger: #ff6b6b;
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 24px; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 600px at 80% -10%, rgba(110,231,255,0.25), transparent),
+                  radial-gradient(800px 400px at -10% 0%, rgba(155,140,255,0.2), transparent), var(--bg);
+      color: var(--text);
+    }
+    .wrap { max-width: 780px; margin: 0 auto; }
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+    }
+    h1 { font-size: 22px; margin: 8px 0 16px; letter-spacing: .2px; }
+    .player {
+      display: grid; grid-template-columns: 120px 1fr; gap: 16px; align-items: center;
+    }
+    .cover {
+      width: 120px; height: 120px; border-radius: 16px; object-fit: cover;
+      background: #22253d; border: 1px solid rgba(255,255,255,0.08);
+    }
+    .title { font-weight: 700; font-size: 18px; }
+    .artist { color: var(--muted); font-size: 14px; margin-top: 2px; }
+
+    .controls { display: flex; align-items: center; gap: 12px; margin: 10px 0; flex-wrap: wrap; }
+    .btn {
+      appearance: none; border: 0; background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #04050f; font-weight: 700; padding: 10px 14px; border-radius: 999px; cursor: pointer;
+      box-shadow: 0 6px 20px rgba(110,231,255,.25), inset 0 0 0 1px rgba(0,0,0,.15);
+      transition: transform .08s ease, filter .15s ease; user-select: none;
+    }
+    .btn:active { transform: translateY(1px) scale(.98); }
+    .btn.sec { background: #232642; color: var(--text); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08); }
+    .btn.danger { background: var(--danger); color: #141222; }
+
+    .timeline { width: 100%; }
+    input[type="range"] {
+      -webkit-appearance: none; appearance: none; width: 100%; height: 6px; background: #252949;
+      border-radius: 999px; outline: none; cursor: pointer; position: relative;
+    }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 4px rgba(110,231,255, .6); }
+    input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 0; box-shadow: 0 0 0 4px rgba(110,231,255,.6); }
+
+    .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-variant-numeric: tabular-nums; }
+    .time { color: var(--muted); font-size: 12px; }
+
+    .list { margin-top: 16px; }
+    .track { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 12px; padding: 8px; border-radius: 12px; cursor: pointer; }
+    .track:hover { background: rgba(255,255,255,0.05); }
+    .track img { width: 44px; height: 44px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); }
+    .track .meta { display: flex; flex-direction: column; }
+    .track .meta .name { font-size: 14px; }
+    .track .meta .by { font-size: 12px; color: var(--muted); }
+
+    .footer { margin-top: 20px; color: var(--muted); font-size: 12px; text-align: center; }
+
+    @media (max-width: 600px) {
+      .player { grid-template-columns: 1fr; }
+      .cover { width: 100%; height: auto; aspect-ratio: 1/1; }
+      .controls { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>🎧 LEVELIN LIVE-LÄHETYKSET ÄÄNITALLENTEINA - PODCASTIT:</h1>
+
+      <div class="player">
+        <img id="cover" class="cover" alt="Kansikuva" />
+        <div>
+          <div class="title" id="title">–</div>
+          <div class="artist" id="artist">–</div>
+
+          <div class="controls">
+            <button class="btn sec" id="prev">⏮️</button>
+            <button class="btn" id="play">▶️ / ⏸</button>
+            <button class="btn sec" id="next">⏭️</button>
+            <button class="btn sec" id="mute">🔇</button>
+            <input class="timeline" id="seek" type="range" min="0" max="100" value="0" step="0.1" aria-label="Aikajana"/>
+            <input style="max-width:140px" id="vol" type="range" min="0" max="1" value="1" step="0.01" aria-label="Äänenvoimakkuus" />
+          </div>
+w
+          <div class="row">
+            <div class="time" id="time">0:00</div>
+            <div class="time" id="duration">0:00</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="list" id="list"></div>
+		
+<div class="footer">
+  <a href="index.html" class="footer">
+    Vaihda soittolista täältä - Etusivu
+  </a>
+</div>
+		</div>
+
+    </div>
+  </div>
+
+  <!-- Yksi <audio> riittää; pidetään se piilossa mutta käytetään natiiveja mediatiloja -->
+  <audio id="audio" preload="metadata" playsinline></audio>
+
+  <script>
+    // *** MUOKKAA TÄMÄ OMAAN SOITTOON ***
+    // Lisää omat tallenteet audio/-kansioon ja päivitä polut + metatiedot.
+    // Formaatit: .mp3 (laajin tuki), .m4a/.aac, .ogg, .wav (isohko).
+	
+const PLAYLIST = [
+// ============================
+  // 1) LEVELI PODCAST
+  // ============================
+  {
+    src: "https://archive.org/download/leveli-/LEVELI-45-Lauri-Johansson.mp3",
+    title: "LEVELI PODCAST #45 - Lauri Late Johansson",
+    artist: "Vieraana suomen pelätyimmäksi rikolliseksi tituleerattu Lauri Johansson!",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://archive.org/download/leveli-/LEVELI-39-Paivi-Rasanen.mp3",
+    title: "LEVELI PODCAST #39 - Päivi Räsänen",
+    artist: "Vieraana kansanedustaja, lääkäri ja kirjailija, Päivi Räsänen!",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://ia600906.us.archive.org/6/items/leveli-/LEVELI-61-Junes-Lokka.mp3",
+    title: "LEVELI PODCAST #61 - Junes Lokka",
+    artist: "Vieraana oululainen kaupunginvaltuutettu Junes Lokka, joka oli juuri uutisotsikoissa kun hänen valituksensa kahdesta kiihottamisesta kansanryhmää vastaan hylättiin!",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://ia600906.us.archive.org/6/items/leveli-/LEVELI-73-Arto-Lauri.mp3",
+    title: "LEVELI PODCAST #73 - Arto Lauri",
+    artist: "Vieraana eniten pyydetty vieras, energia-alojen todellinen ammattiosaaja Arto Lauri!",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://archive.org/download/leveli-/LEVELI-107-Kristian-Parviainen-2.mp3",
+    title: "LEVELI PODCAST #107 - Kristian Parviainen OSA 2",
+    artist: "Vihdoin LEVELIN uusi studio on käyttövalmiina, ja päästään jatkamaan tuttuun tapaan podcastejä! Jatketaan siitä mihin jäätiin viimeisimpänä vieraana eli Tesla Junior / Kristian Parviaisen haastattelulla!",
+    artwork: "leveli-logo.jpg"
+  },
+	{
+    src: "https://ia600906.us.archive.org/6/items/leveli-/LEVELI-79-Arhi-Kuittinen.mp3",
+    title: "LEVELI PODCAST #79 - Arhi Kuittinen",
+    artist: "Vieraana Arhi Kuittinen jolla on tietämystä suomen & maailman salatusta historiasta, sekä kotimaan politiikasta!",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://archive.org/download/leveli-/LEVELI-101-Janus-Putkonen.mp3",
+    title: "LEVELI PODCAST #101 - Janus Putkonen",
+    artist: "Vieraana Janus Putkonen, MV-median päätoimittaja, teatteriohjaaja ja käsikirjoittaja.",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://ia600906.us.archive.org/6/items/leveli-/LEVELI-77-Joni-Koivuniemi.mp3",
+    title: "LEVELI PODCAST #77 - Joni Koivuniemi",
+    artist: "Vieraana yleisön pyynnöstä Stand up koomikko Joni Koivuniemi!",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://archive.org/download/leveli-/LEVELI-125-LAURI-JOHANSSON-2.mp3",
+    title: "LEVELI PODCAST #125 - Lauri Late Johansson OSA 2",
+    artist: "Lauri Johanssonin toinen haastattelu",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://ia600906.us.archive.org/6/items/leveli-/LEVELI-82-EEVA-PAULIINA.mp3",
+    title: "LEVELI PODCAST #82 - Eeva Pauliina",
+    artist: "Bioanalyytikko Eeva Pauliina kertoo näkökulmia vallitsevasta testauspandemiasta.",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://ia600906.us.archive.org/6/items/leveli-/LEVELI-70-ENRP.mp3",
+    title: "LEVELI PODCAST #70 - ENRP & BIG SAM",
+    artist: "Vieraana räppäri E.N.R.P. aka Ei Niin Reipas Poika, mukana myös Big Sam sekä Tinde!",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://ia600906.us.archive.org/6/items/leveli-/LEVELI-12-Sebastian-Tynkkynen.mp3",
+    title: "LEVELI PODCAST #12 - Sebastian Tynkkynen",
+    artist: "Vieraana perussuomalaisten kansanedustaja Sebastian Tynkkynen!",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://archive.org/download/leveli-/LEVELI-26-Wespa.mp3",
+    title: "LEVELI PODCAST #26 - Wespa",
+    artist: "Puhutaan yliluonollisista asioista, paranormaaliblogi.net perustaja Wespan kanssa!",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://archive.org/download/leveli-/LEVELI-31-Jarmo-Ekman.mp3",
+    title: "LEVELI PODCAST #31 - Jarmo Ekman",
+    artist: "Informaatiosota, kuinka kansakunta tuhotaan? siitä otetaan selvää vieraamme Jarmo Ekmanin kanssa!",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://archive.org/download/leveli-/LEVELI-46-Christoffer-Weiss.mp3",
+    title: "LEVELI PODCAST #46 - Christoffer Weiss",
+    artist: "Vieraana monitoimimies Christoffer Weiss.",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://archive.org/download/leveli-/LEVELI-52-Yazka-Love.mp3",
+    title: "LEVELI PODCAST #52 - Yazka Love",
+    artist: "Vieraana 'totuus' piireissä tunnettu puhuja Yazka Love",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://ia600906.us.archive.org/6/items/leveli-/LEVELI-64-Myytinkertojat.mp3",
+    title: "LEVELI PODCAST #64 - Myytinkertojat",
+    artist: "Keskustelua muinaisen suomen ja maailman salatusta historiasta.",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://archive.org/download/leveli-/LEVELI-14-TESTOTIMO.mp3",
+    title: "LEVELI PODCAST #14 - TESTOTIMO",
+    artist: "Vieraana hauska somebodaaja TESTOTIMO!",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://archive.org/download/leveli-/LEVELI-47-Rasoul-Dehghan.mp3",
+    title: "LEVELI PODCAST #47 - Rasoul Dehghan (faija)",
+    artist: "Vieraana Slim Millin ja Mahkun faija Rasoul.",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://archive.org/download/leveli-/LEVELI-48-Ivan-Puopolo.mp3",
+    title: "LEVELI PODCAST #48 - Ivan Puopolo",
+    artist: "Ivan Puopolo on suomalainen radio- ja televisiojuontaja.",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://archive.org/download/leveli-/LEVELI-51-Olli-Kotro.mp3",
+    title: "LEVELI PODCAST #51 - Olli Kotro",
+    artist: "Vieraana Laura Huhtasaaren avustaja Euroopan parlamentissa Olli Kotro.",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://archive.org/download/leveli-/LEVELI-55-Juju.mp3",
+    title: "LEVELI PODCAST #55 - Juju & Trilluminati",
+    artist: "Vieraina Juju, Jones ja Tomi Random.",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://archive.org/download/leveli-/LEVELI-58-ELMIGU-JEDIDI-MAMALI.mp3",
+    title: "LEVELI PODCAST #58 - EL MIGU x JEDIDI x MÄMÄLI",
+    artist: "Striimattiin livenä 21.12.2020",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://ia600906.us.archive.org/6/items/leveli-/LEVELI-62-Aleksi-Virtanen.mp3",
+    title: "LEVELI PODCAST #62 - Aleksi Virtanen",
+    artist: "Vieraana yrittäjä ja motivaattori Aleksi Virtanen.",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://ia600906.us.archive.org/6/items/leveli-/LEVELI-63-Tapo-Dasa.mp3",
+    title: "LEVELI PODCAST #63 - Tapo Dasa",
+    artist: "Suomen Krishna-liikkeen johtaja Tapo Divyam Dasa.",
+    artwork: "leveli-logo.jpg"
+  },
+	{
+    src: "https://archive.org/download/leveli-_202508/LEVELI-67-JNS%20-ech.mp3",
+    title: "LEVELI PODCAST #67 - JNS Tech",
+    artist: "Vieraana JNS Tech tubekanava, jonka erikoisalaa ovat tietokoneet, pelituotteet sekä teknologia.",
+    artwork: "leveli-logo.jpg"
+ },
+  {
+    src: "https://ia600906.us.archive.org/6/items/leveli-/LEVELI-71-Tiina-Wiik.mp3",
+    title: "LEVELI PODCAST #71 - Tiina Wiik",
+    artist: "Striimattiin livenä 27.2.2021",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+	src: "https://ia800206.us.archive.org/12/items/leveli-_202508/LEVELI-68-Nisa-Suhonen%20%28hauturi%29.mp3",
+    title: "LEVELI PODCAST #68 - Nisa Suhonen (hauturi)",
+    artist: "Striimattiin livenä 18.2.2021.",
+    artwork: "leveli-logo.jpg"
+},
+  {
+   src: "https://ia600906.us.archive.org/6/items/leveli-/LEVELI-72-Miikka-Peuravirta.mp3",
+    title: "LEVELI PODCAST #72 - Miikka Peuriz Peuravirta",
+    artist: "Vieraana 'Pähkinä-Miikka'.",
+    artwork: "leveli-logo.jpg"
+},
+  {
+    src: "https://archive.org/download/leveli-_202508/LEVELI-78-James-Hirvisaari.mp3",
+    title: "LEVELI PODCAST #78 - James Hirvisaari",
+    artist: "Vieraana James Hirvisaari: TM (Hki yliopisto, dogmatiikka), kansanedustaja 2011-2015, kansanedustajan avustaja, eduskuntaryhmän sihteeri, metafyysikko, apologeetta, demagogi, vapaaherra.",
+    artwork: "leveli-logo.jpg"
+ },
+
+	{
+    src: "https://ia800206.us.archive.org/12/items/leveli-_202508/LEVELI-80%20-Espoon-Kotikirkko.mp3",
+    title: "LEVELI PODCAST #80 - Espoon Kotikirkko",
+    artist: "Pastorit Tommi Matikka ja Tuomas Toppila kertovat seurakunnan kokoontumisen hajottamisesta sekä vastaavat julkisuudessa ja sosiaalisessa mediassa esiin nousseisiin yleisimpiin kysymyksiin!",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://ia600906.us.archive.org/6/items/leveli-/LEVELI-59-Patricia-Gaderi.mp3",
+    title: "LEVELI PODCAST #59 - Patricia Gaderi",
+    artist: "Vieraana Iranilainen somevaikuttaja Patricia Gaderi.",
+    artwork: "leveli-logo.jpg"
+  },
+	{
+    src: "https://archive.org/download/leveli-/LEVELI-66%20-Tuukka-Kuru.mp3",
+    title: "LEVELI PODCAST #66 - Tuukka Kuru & Sinimusta liike",
+    artist: "Vieraana Sinimusta Liikkeen PJ Tuukka Kuru. Keskustellaan vapaasti Sinimustan liikkeestä ja kaikesta muustakin!",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+		
+    src: "https://ia600906.us.archive.org/6/items/leveli-/LEVELI-60-bitcoin-kurssi.mp3",
+    title: "LEVELI PODCAST #60 - BITCOIN Kurssiennätys LÄHETYS",
+    artist: "Vieraina bitcoin alan asiantuntijoita.",
+    artwork: "leveli-logo.jpg"
+  },
+	  {
+    src: "https://archive.org/download/leveli-_202508/LEVELI-81-BrandonSummitt.mp3",
+    title: "LEVELI PODCAST #81 - Brandon Summitt",
+    artist: "Vieraana USA ARMY Ylipäälikkö! keskustellaan minkälaista on lentää sotatilassa, tehdä huumebusteja, sekä minkälaista on olla ylipäälikkönä.",
+    artwork: "leveli-logo.jpg"
+  },
+		  {
+    src: "https://archive.org/download/leveli-_202508/LEVEL-85-Michae-Majalahti.mp3",
+    title: "LEVELI PODCAST #85 - Michael 'StarBuck' Majalahtit",
+    artist: "Vieraana Michael 'StarBuck' Majalahti, joka on Suomessa asuva ammattipainija, laulaja, kolumnisti, kuvataiteilija, personal trainer ja life coach!.",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://ia600906.us.archive.org/6/items/leveli-/LEVELI-86-Heidi-Akselin.mp3",
+    title: "LEVELI PODCAST #86 - Heidi Akselin",
+    artist: "Striimattiin livenä 15.5.2021",
+    artwork: "leveli-logo.jpg"
+  },
+		 {
+    src: "https://ia600906.us.archive.org/6/items/leveli-/LEVELI-89-Reetta-Angelvo-Riipinen.mp3",
+    title: "LEVELI PODCAST #89 - Reetta Angelvo-Riipinen",
+    artist: "Vieraana perussuomalaisten kuntavaaliehdokas 2021 Helsingistä.",
+    artwork: "leveli-logo.jpg"
+  },
+	 {
+    src: "https://ia600206.us.archive.org/12/items/leveli-_202508/LEVELI-69-Mikko-Paunio.mp3",
+    title: "LEVELI PODCAST #69 - Mikko Paunio",
+    artist: "Vieraana Mikko Paunio, lääkintöneuvos sosiaali- ja terveysministeriö, Turvallisuus ja terveys -osasto / TUTO, Hyvinvoinnin ja terveyden suojelu -yksikkö / HYT Ylilääkäri.",
+    artwork: "leveli-logo.jpg"
+  }
+];
+
+
+    // *** TOTEUTUS ***
+    const $ = (id) => document.getElementById(id);
+    const audio = $("audio");
+    const cover = $("cover");
+    const titleEl = $("title");
+    const artistEl = $("artist");
+    const seek = $("seek");
+    const vol = $("vol");
+    const timeEl = $("time");
+    const durEl = $("duration");
+    const playBtn = $("play");
+    const prevBtn = $("prev");
+    const nextBtn = $("next");
+    const muteBtn = $("mute");
+    const listEl = $("list");
+
+    let i = +localStorage.getItem("idx") || 0;
+    if (i < 0 || i >= PLAYLIST.length) i = 0;
+
+    // Palauta viimeisin kuuntelukohta kappalekohtaisesti
+    function keyFor(src){ return `pos::${src}`; }
+
+    function fmt(s){ if(!isFinite(s)) return "0:00"; const m=Math.floor(s/60), ss=Math.floor(s%60).toString().padStart(2,'0'); return `${m}:${ss}`; }
+
+    function loadTrack(idx, {autoplay=false}={}){
+      i = (idx + PLAYLIST.length) % PLAYLIST.length;
+      const t = PLAYLIST[i];
+      localStorage.setItem("idx", i);
+      document.title = `${t.title} · ${t.artist}`;
+      titleEl.textContent = t.title; artistEl.textContent = t.artist;
+      cover.src = t.artwork || "";
+      audio.src = t.src;
+      seek.value = 0; timeEl.textContent = "0:00"; durEl.textContent = "0:00";
+
+      // Palauta viimeisin kohta
+      const saved = +localStorage.getItem(keyFor(t.src));
+      if (saved && !isNaN(saved)) {
+        audio.currentTime = saved;
+      }
+
+      updateMediaSession(t);
+      if (autoplay) audio.play().catch(()=>{});
+      renderList();
+    }
+
+    function renderList(){
+      listEl.innerHTML = "";
+      PLAYLIST.forEach((t, idx) => {
+        const row = document.createElement('div');
+        row.className = 'track';
+        row.innerHTML = `
+          <img src="${t.artwork || ''}" alt=""/>
+          <div class="meta"><span class="name">${t.title}</span><span class="by">${t.artist}</span></div>
+          <div>${idx === i ? '▶️' : ''}</div>
+        `;
+        row.addEventListener('click', () => loadTrack(idx, {autoplay:true}));
+        listEl.appendChild(row);
+      });
+    }
+
+    function updateMediaSession(t){
+      if ('mediaSession' in navigator) {
+        try {
+          navigator.mediaSession.metadata = new MediaMetadata({
+            title: t.title, artist: t.artist, album: 'Tallenteet',
+            artwork: t.artwork ? [
+              { src: t.artwork,   sizes: '512x512', type: 'image/jpeg' }
+            ] : []
+          });
+          navigator.mediaSession.setActionHandler('play', () => audio.play());
+          navigator.mediaSession.setActionHandler('pause', () => audio.pause());
+          navigator.mediaSession.setActionHandler('previoustrack', prev);
+          navigator.mediaSession.setActionHandler('nexttrack', next);
+          navigator.mediaSession.setActionHandler('seekto', (e) => { if (e.fastSeek && 'fastSeek' in audio) audio.fastSeek(e.seekTime); else audio.currentTime = e.seekTime; });
+        } catch(_) {}
+      }
+    }
+
+    function prev(){ loadTrack(i-1, {autoplay:true}); }
+    function next(){ loadTrack(i+1, {autoplay:true}); }
+
+    // --- UI handlers ---
+    playBtn.addEventListener('click', () => {
+      if (audio.paused) audio.play(); else audio.pause();
+    });
+    prevBtn.addEventListener('click', prev);
+    nextBtn.addEventListener('click', next);
+    muteBtn.addEventListener('click', () => { audio.muted = !audio.muted; muteBtn.textContent = audio.muted ? '🔈' : '🔇'; });
+    vol.addEventListener('input', () => { audio.volume = +vol.value; });
+
+    seek.addEventListener('input', () => {
+      if (!isFinite(audio.duration)) return;
+      audio.currentTime = (+seek.value / 100) * audio.duration;
+    });
+
+    audio.addEventListener('timeupdate', () => {
+      if (isFinite(audio.duration)) {
+        const p = (audio.currentTime / audio.duration) * 100;
+        seek.value = p;
+        timeEl.textContent = fmt(audio.currentTime);
+        durEl.textContent = fmt(audio.duration);
+      }
+      const t = PLAYLIST[i];
+      localStorage.setItem(keyFor(t.src), audio.currentTime);
+    });
+
+    audio.addEventListener('ended', next);
+
+    // iOS/Safari taustatoisto: varmista että käytämme <audio> eikä pelkkää WebAudioa
+    // Autoplay vaatii käyttäjän eleen; käyttäjä painaa play-nappia -> ok.
+
+    // Lataa ensimmäinen kappale
+    loadTrack(i);
+  </script>
+</body>
+</html>
