@@ -1,0 +1,47 @@
+Etsitään näille oikea kohde:
+
+  // ============================
+  // 3) MUUT (SHOW, LIVE, SALALIITTO jne.)
+  // ============================
+  {
+    src: "https://archive.org/download/leveli-/LEVELI-SUURI-NATO-VAITTELY.mp3",
+    title: "LEVELI SUURI NATO VÄITTELY",
+    artist: "Väittelyssä: Janus Putkonen x Slim Mill VS Miki Sileoni x Tommi O. Pälve",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://ia600906.us.archive.org/6/items/leveli-/LEVELI-Alkesi-Grymin.mp3",
+    title: "LEVELI LIVE - Aleksi Grymin: naurettavat bitcoin puheet!",
+    artist: "Debunkataan suomen pankin miehen bitcoin-analyysit.",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://ia600906.us.archive.org/6/items/leveli-/LEVELI-LIVE-Doom2.mp3",
+    title: "LEVELI LIVE - Doom II MM-ennätysyritys (LOOPER)",
+    artist: "Looper yrittää uutta ennätystä suoraan livessä!",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://ia600906.us.archive.org/6/items/leveli-/LEVELI-Puheenaihe-collabi.mp3",
+    title: "LEVELI & PUHEENAIHE Podcast collabi - LIVE KESKUSTELU!",
+    artist: "Vieraana Leevi Leivo & Rami Kurimo.",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://ia600906.us.archive.org/6/items/leveli-/LEVELI-S9-Sanat-numerot.mp3",
+    title: "LEVELI SALALIITTO #9 | SANAT & NUMEROT",
+    artist: "Slim Mill käy läpi sanojen ja numeroiden merkityksiä.",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://ia600906.us.archive.org/6/items/leveli-/LEVELI-88-show.mp3",
+    title: "LEVELI SHOW #88 - VIIMEINEN LÄHETYS ENNEN VAALEJA!",
+    artist: "Striimattiin livenä 6.4.2025",
+    artwork: "leveli-logo.jpg"
+  },
+  {
+    src: "https://archive.org/download/leveli-/LEVELI-suora-pellenena.mp3",
+    title: "LEVELI - SUORA LÄHETYS: Pellenenä SUOMENENNÄTYS lähetys",
+    artist: "142 pellenenää!",
+    artwork: "leveli-logo.jpg"
+  },
