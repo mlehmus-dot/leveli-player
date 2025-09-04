@@ -1,7 +1,5 @@
 <h2>To-DO:</h2>
-<h2>LEVELI NEWS</h2>
-<p>1. Upload ALL episodes from #33 to #42 + LEVELI NEWS SPECIAL By JUNNU_ + Ilkka Tiainen - Uusi elokuva traileri! + UUTISET + PUHELUT 
-and LEVELI NEWS_ Takaisin pääkanavalla + UUTISTEN analysointi!</p>
+
 <h2>LEVELI SHOW</h2>
 <p>1. Upload missing episodes</p>
 <h2>LEVELI PODCAST</h2>
@@ -13,3 +11,5 @@ and LEVELI NEWS_ Takaisin pääkanavalla + UUTISTEN analysointi!</p>
 
 <h2>LEVELI NEWS</h2>
 <p>1. Remove audios that won't belong under NEWS. Add them to right pages (code lines saved in temp -folder</p> 
+<h2>LEVELI NEWS</h2>
+<p>1. All episodes uploaded and linked!</p>
