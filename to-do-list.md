@@ -1,6 +1,6 @@
 <h2>To-DO:</h2>
 <h2>LEVELI NEWS</h2>
-<pt yle="text-decoration: line-through;">1. Upload ALL episodes from #33 to #42 + LEVELI NEWS SPECIAL By JUNNU_ + Ilkka Tiainen - Uusi elokuva traileri! + UUTISET + PUHELUT 
+<pt>1. Upload ALL episodes from #33 to #42 + LEVELI NEWS SPECIAL By JUNNU_ + Ilkka Tiainen - Uusi elokuva traileri! + UUTISET + PUHELUT 
 and LEVELI NEWS_ Takaisin pääkanavalla + UUTISTEN analysointi!</p>
 <h2>LEVELI SHOW</h2>
 <p>1. Upload missing episodes</p>
