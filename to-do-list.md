@@ -11,5 +11,4 @@
 
 <h2>LEVELI NEWS</h2>
 <p>1. Remove audios that won't belong under NEWS. Add them to right pages (code lines saved in temp -folder</p> 
-<h2>LEVELI NEWS</h2>
-<p>1. All episodes uploaded and linked!</p>
+<p>2. All episodes uploaded and linked!</p>
