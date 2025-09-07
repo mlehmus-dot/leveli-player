@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LEVELI MEDIA PLAYER - PODCASTS</title>
+  <style>
+    :root {
+      --bg: #0f1220;
+      --card: #171a2e;
+      --accent: #6ee7ff;
+      --accent-2: #9b8cff;
+      --text: #eaeaf1;
+      --muted: #a6accd;
+      --danger: #ff6b6b;
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; padding: 24px; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 600px at 80% -10%, rgba(110,231,255,0.25), transparent),
+                  radial-gradient(800px 400px at -10% 0%, rgba(155,140,255,0.2), transparent), var(--bg);
+      color: var(--text);
+    }
+    .wrap { max-width: 780px; margin: 0 auto; }
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.35);
+    }
+    h1 { font-size: 22px; margin: 8px 0 16px; letter-spacing: .2px; }
+    .player {
+      display: grid; grid-template-columns: 120px 1fr; gap: 16px; align-items: center;
+    }
+    .cover {
+      width: 120px; height: 120px; border-radius: 16px; object-fit: cover;
+      background: #22253d; border: 1px solid rgba(255,255,255,0.08);
+    }
+    .title { font-weight: 700; font-size: 18px; }
+    .artist { color: var(--muted); font-size: 14px; margin-top: 2px; }
+
+    .controls { display: flex; align-items: center; gap: 12px; margin: 10px 0; flex-wrap: wrap; }
+    .btn {
+      appearance: none; border: 0; background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: #04050f; font-weight: 700; padding: 10px 14px; border-radius: 999px; cursor: pointer;
+      box-shadow: 0 6px 20px rgba(110,231,255,.25), inset 0 0 0 1px rgba(0,0,0,.15);
+      transition: transform .08s ease, filter .15s ease; user-select: none;
+    }
+    .btn:active { transform: translateY(1px) scale(.98); }
+    .btn.sec { background: #232642; color: var(--text); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08); }
+    .btn.danger { background: var(--danger); color: #141222; }
+
+    .timeline { width: 100%; }
+    input[type="range"] {
+      -webkit-appearance: none; appearance: none; width: 100%; height: 6px; background: #252949;
+      border-radius: 999px; outline: none; cursor: pointer; position: relative;
+    }
+    input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 4px rgba(110,231,255, .6); }
+    input[type="range"]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 0; box-shadow: 0 0 0 4px rgba(110,231,255,.6); }
+
+    .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; font-variant-numeric: tabular-nums; }
+    .time { color: var(--muted); font-size: 12px; }
+
+    .list { margin-top: 16px; }
+    .track { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 12px; padding: 8px; border-radius: 12px; cursor: pointer; }
+    .track:hover { background: rgba(255,255,255,0.05); }
+    .track img { width: 44px; height: 44px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(255,255,255,0.08); }
+    .track .meta { display: flex; flex-direction: column; }
+    .track .meta .name { font-size: 14px; }
+    .track .meta .by { font-size: 12px; color: var(--muted); }
+
+    .footer { margin-top: 20px; color: var(--muted); font-size: 12px; text-align: center; }
+
+    @media (max-width: 600px) {
+      .player { grid-template-columns: 1fr; }
+      .cover { width: 100%; height: auto; aspect-ratio: 1/1; }
+      .controls { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>🎧 LEVELIN LIVE-LÄHETYKSET ÄÄNITALLENTEINA - PODCASTIT:</h1>
+
+      <div class="player">
+        <img id="cover" class="cover" alt="Kansikuva" />
+        <div>
+          <div class="title" id="title">–</div>
+          <div class="artist" id="artist">–</div>
+
+          <div class="controls">
+            <button class="btn sec" id="prev">⏮️</button>
+            <button class="btn" id="play">▶️ / ⏸</button>
+            <button class="btn sec" id="next">⏭️</button>
+            <button class="btn sec" id="mute">🔇</button>
+            <input class="timeline" id="seek" type="range" min="0" max="100" value="0" step="0.1" aria-label="Aikajana"/>
+            <input style="max-width:140px" id="vol" type="range" min="0" max="1" value="1" step="0.01" aria-label="Äänenvoimakkuus" />
+          </div>
+w
+          <div class="row">
+            <div class="time" id="time">0:00</div>
+            <div class="time" id="duration">0:00</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="list" id="list"></div>
+		
+<div class="footer">
+  <a href="index.html" class="footer" target="_blank">
+    Vaihda soittolista täältä - Etusivu</a>
+	</div>
+      </div>
+</div>
+	
+  <!-- Yksi <audio> riittää; pidetään se piilossa mutta käytetään natiiveja mediatiloja -->
+  <audio id="audio" preload="metadata" playsinline></audio>
+
+  <script>
+    // *** MUOKKAA TÄMÄ OMAAN SOITTOON ***
+    // Lisää omat tallenteet audio/-kansioon ja päivitä polut + metatiedot.
+    // Formaatit: .mp3 (laajin tuki), .m4a/.aac, .ogg, .wav (isohko).
+	
+const PLAYLIST = [
+// ============================
+  // 1) LEVELI PODCAST 2/3
+  // ============================
+ {
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2341%20-%20Emil%20Kastehelmi.mp3",
+    title: "LEVELI PODCAST #41 – Emil Kastehelmi",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2342%20-%20Sampo%20L%C3%B6pp%C3%B6nen%20%28Poker%20Night%29.mp3",
+    title: "LEVELI PODCAST #42 – Sampo Löppönen (Poker Night)",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2343%20-%20Maria%20Nordin.mp3",
+    title: "LEVELI PODCAST #43 – Maria Nordin",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2344%20-%20M%C3%A4ngimies%20%26%20Gabi%20%28Thaimaannorpat%29.mp3",
+    title: "LEVELI PODCAST #44 – Mängimies & Gabi (Thaimaannorpat) x",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-/LEVELI-45-Lauri-Johansson.mp3",
+    title: "LEVELI PODCAST #45 - Lauri Late Johansson",
+    artist: "Vieraana suomen pelätyimmäksi rikolliseksi tituleerattu Lauri Johansson!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-/LEVELI-46-Christoffer-Weiss.mp3",
+    title: "LEVELI PODCAST #46 - Christoffer Weiss",
+    artist: "Vieraana monitoimimies Christoffer Weiss.",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-/LEVELI-47-Rasoul-Dehghan.mp3",
+    title: "LEVELI PODCAST #47 - Rasoul Dehghan (faija)",
+    artist: "Vieraana Slim Millin ja Mahkun faija Rasoul.",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-/LEVELI-48-Ivan-Puopolo.mp3",
+    title: "LEVELI PODCAST #48 - Ivan Puopolo",
+    artist: "Ivan Puopolo on suomalainen radio- ja televisiojuontaja.",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2349%20-%20Joakim%20Vigelius.mp3",
+    title: "LEVELI PODCAST #49 – Joakim Vigelius",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2350%20-%20Kim%20Holviala.mp3",
+    title: "LEVELI PODCAST #50 – Kim Holviala",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-/LEVELI-51-Olli-Kotro.mp3",
+    title: "LEVELI PODCAST #51 - Olli Kotro",
+    artist: "Vieraana Laura Huhtasaaren avustaja Euroopan parlamentissa Olli Kotro.",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-/LEVELI-52-Yazka-Love.mp3",
+    title: "LEVELI PODCAST #52 - Yazka Love",
+    artist: "Vieraana 'totuus' piireissä tunnettu puhuja Yazka Love",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2353%20-%20Yrj%C3%B6%20Hakanen.mp3",
+    title: "LEVELI PODCAST #53 – Yrjö Hakanen",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2354%20-%20Lauri%20Louhio.mp3",
+    title: "LEVELI PODCAST #54 – Lauri Louhio",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2356%20-%20Anter%20Yasa%20%2B%20Lakimies.mp3",
+    title: "LEVELI PODCAST #56 – Anter Yasa + Lakimies",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2357%20-%20DJ%20Proteus.mp3",
+    title: "LEVELI PODCAST #57 – DJ Proteus",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2364%20-%20PULLI%24%20osa%202.mp3",
+    title: "LEVELI PODCAST #64 – PULLI$ osa 2",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2365%20-%20Christoffer%20Weiss%20Pt%202.mp3",
+    title: "LEVELI PODCAST #65 – Christoffer Weiss Pt 2",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2374%20-%20Teemu%20Vehkala.mp3",
+    title: "LEVELI PODCAST #74 – Teemu Vehkala",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2375%20-%20Ala-Tuuhonen.mp3",
+    title: "LEVELI-2 PODCAST #75 – Ala-Tuuhonen",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2375%20-%20PAHA%20MATAMI.mp3",
+    title: "LEVELI PODCAST #75 – PAHA MATAMI",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2376%20-%20Christoffer%20Weiss%20Pt%203.mp3",
+    title: "LEVELI-2 PODCAST #76 – Christoffer Weiss Pt 3",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2376%20-%20Jani%20Tolin.mp3",
+    title: "LEVELI PODCAST #76 – Jani Tolin",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2377%20-%20Joni%20Koivuniemi.mp3",
+    title: "LEVELI PODCAST #77 – Joni Koivuniemi",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2383%20-%20Mertsi%20%E2%80%9DMEDI%E2%80%9D%20%C3%84rling.mp3",
+    title: "LEVELI PODCAST #83 – Mertsi ”MEDI” Ärling",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2384%20-%20Timo%20Lampen.mp3",
+    title: "LEVELI PODCAST #84 – Timo Lampen",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2386%20-%20Jalkaterapeutti%20Kari%20Mellavuo.mp3",
+    title: "LEVELI PODCAST #86 – Jalkaterapeutti Kari Mellavuo",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2387%20-%20Sami%20Minkkinen.mp3",
+    title: "LEVELI PODCAST #87 – Sami Minkkinen",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2388%20-%20Mikko%20Kemppe.mp3",
+    title: "LEVELI PODCAST #88 – Mikko Kemppe",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2390%20-%20Juho%20Lyytik%C3%A4inen.mp3",
+    title: "LEVELI PODCAST #90 – Juho Lyytikäinen",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2391%20-%20Lauri-Pekka%20Alanko%20%26%20Dmitry%20Trubnikov.mp3",
+    title: "LEVELI PODCAST #91 – Lauri-Pekka Alanko & Dmitry Trubnikov",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2392%20-%20Oskari%20Juurikkala.mp3",
+    title: "LEVELI PODCAST #92 – Oskari Juurikkala",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2393%20-%20Katja%20Kokkoniemi.mp3",
+    title: "LEVELI PODCAST #93 – Katja Kokkoniemi",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2394%20-%20Mauri%20Tikka.mp3",
+    title: "LEVELI PODCAST #94 – Mauri Tikka",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2395%20Ossi%20Tiihonen%20ja%20Jaana%20Kavonius.mp3",
+    title: "LEVELI PODCAST #95 – Ossi Tiihonen ja Jaana Kavonius",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2396%20-%20%20TARU%20VUORELA.mp3",
+    title: "LEVELI PODCAST #96 – TARU VUORELA",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2397%20-%20BORA.mp3",
+    title: "LEVELI PODCAST #97 – BORA",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2397%20-%20LUNA%20opettaja.mp3",
+    title: "LEVELI-2 PODCAST #97 – LUNA opettaja",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2398%20EX-MUNKKI.mp3",
+    title: "LEVELI PODCAST #98 – EX-MUNKKI",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%2399%20Luigi%20Giuliano%20de%20Anna.mp3",
+    title: "LEVELI PODCAST #99 – Luigi Giuliano de Anna",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+},
+{
+    src: "https://archive.org/download/leveli-55-pods/PODCAST%20%23100%20Jussi%20Kontio.mp3",
+    title: "LEVELI PODCAST #100 – Jussi Kontio",
+    artist: "Jakson kuvaus tulossa!",
+    artwork: "leveli-logo.jpg"
+}
+
+];
+
+
+    // *** TOTEUTUS ***
+    const $ = (id) => document.getElementById(id);
+    const audio = $("audio");
+    const cover = $("cover");
+    const titleEl = $("title");
+    const artistEl = $("artist");
+    const seek = $("seek");
+    const vol = $("vol");
+    const timeEl = $("time");
+    const durEl = $("duration");
+    const playBtn = $("play");
+    const prevBtn = $("prev");
+    const nextBtn = $("next");
+    const muteBtn = $("mute");
+    const listEl = $("list");
+
+    let i = +localStorage.getItem("idx") || 0;
+    if (i < 0 || i >= PLAYLIST.length) i = 0;
+
+    // Palauta viimeisin kuuntelukohta kappalekohtaisesti
+    function keyFor(src){ return `pos::${src}`; }
+
+    function fmt(s){ if(!isFinite(s)) return "0:00"; const m=Math.floor(s/60), ss=Math.floor(s%60).toString().padStart(2,'0'); return `${m}:${ss}`; }
+
+    function loadTrack(idx, {autoplay=false}={}){
+      i = (idx + PLAYLIST.length) % PLAYLIST.length;
+      const t = PLAYLIST[i];
+      localStorage.setItem("idx", i);
+      document.title = `${t.title} · ${t.artist}`;
+      titleEl.textContent = t.title; artistEl.textContent = t.artist;
+      cover.src = t.artwork || "";
+      audio.src = t.src;
+      seek.value = 0; timeEl.textContent = "0:00"; durEl.textContent = "0:00";
+
+      // Palauta viimeisin kohta
+      const saved = +localStorage.getItem(keyFor(t.src));
+      if (saved && !isNaN(saved)) {
+        audio.currentTime = saved;
+      }
+
+      updateMediaSession(t);
+      if (autoplay) audio.play().catch(()=>{});
+      renderList();
+    }
+
+    function renderList(){
+      listEl.innerHTML = "";
+      PLAYLIST.forEach((t, idx) => {
+        const row = document.createElement('div');
+        row.className = 'track';
+        row.innerHTML = `
+          <img src="${t.artwork || ''}" alt=""/>
+          <div class="meta"><span class="name">${t.title}</span><span class="by">${t.artist}</span></div>
+          <div>${idx === i ? '▶️' : ''}</div>
+        `;
+        row.addEventListener('click', () => loadTrack(idx, {autoplay:true}));
+        listEl.appendChild(row);
+      });
+    }
+
+    function updateMediaSession(t){
+      if ('mediaSession' in navigator) {
+        try {
+          navigator.mediaSession.metadata = new MediaMetadata({
+            title: t.title, artist: t.artist, album: 'Tallenteet',
+            artwork: t.artwork ? [
+              { src: t.artwork,   sizes: '512x512', type: 'image/jpeg' }
+            ] : []
+          });
+          navigator.mediaSession.setActionHandler('play', () => audio.play());
+          navigator.mediaSession.setActionHandler('pause', () => audio.pause());
+          navigator.mediaSession.setActionHandler('previoustrack', prev);
+          navigator.mediaSession.setActionHandler('nexttrack', next);
+          navigator.mediaSession.setActionHandler('seekto', (e) => { if (e.fastSeek && 'fastSeek' in audio) audio.fastSeek(e.seekTime); else audio.currentTime = e.seekTime; });
+        } catch(_) {}
+      }
+    }
+
+    function prev(){ loadTrack(i-1, {autoplay:true}); }
+    function next(){ loadTrack(i+1, {autoplay:true}); }
+
+    // --- UI handlers ---
+    playBtn.addEventListener('click', () => {
+      if (audio.paused) audio.play(); else audio.pause();
+    });
+    prevBtn.addEventListener('click', prev);
+    nextBtn.addEventListener('click', next);
+    muteBtn.addEventListener('click', () => { audio.muted = !audio.muted; muteBtn.textContent = audio.muted ? '🔈' : '🔇'; });
+    vol.addEventListener('input', () => { audio.volume = +vol.value; });
+
+    seek.addEventListener('input', () => {
+      if (!isFinite(audio.duration)) return;
+      audio.currentTime = (+seek.value / 100) * audio.duration;
+    });
+
+    audio.addEventListener('timeupdate', () => {
+      if (isFinite(audio.duration)) {
+        const p = (audio.currentTime / audio.duration) * 100;
+        seek.value = p;
+        timeEl.textContent = fmt(audio.currentTime);
+        durEl.textContent = fmt(audio.duration);
+      }
+      const t = PLAYLIST[i];
+      localStorage.setItem(keyFor(t.src), audio.currentTime);
+    });
+
+    audio.addEventListener('ended', next);
+
+    // iOS/Safari taustatoisto: varmista että käytämme <audio> eikä pelkkää WebAudioa
+    // Autoplay vaatii käyttäjän eleen; käyttäjä painaa play-nappia -> ok.
+
+    // Lataa ensimmäinen kappale
+    loadTrack(i);
+  </script>
+</body>
+</html>
